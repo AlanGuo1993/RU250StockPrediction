@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+<!-- <bean id="dataSource" -->
+<!--     class="org.springframework.jdbc.datasource.DriverManagerDataSource" -->
+<!--     p:driverClassName="com.mysql.jdbc.Driver" -->
+<!--     p:url="jdbc:mysql://localhost:3306/prueba" -->
+<!--     p:username="root" -->
+<!--       p:password="sirenito88"> -->
+<!-- </bean> -->
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+   <!-- <property name="url" value="jdbc:mysql://localhost:3306/test" />
+   <property name="username" value="root" />
+        <property name="password" value="admin" /> -->
+   		<property name="url" value="jdbc:mysql://dev.ce4btmr3auem.us-east-1.rds.amazonaws.com:3306/Test" />
+        <property name="username" value="admin" />
+        <property name="password" value="administrator" />
+        <property name="initialSize" value="5" />        <!-- 初始连接数量 -->  
+        <property name="maxActive" value="30" />         <!-- 最大连接数量 -->  
+        <property name="maxIdle" value="5" />            <!-- 空闲连接数量 -->  
+        <property name="maxWait" value="300000" />       <!-- 一个查询5分钟内没有返回，自动放弃 -->  
+        <property name="validationQuery" value="SELECT 1" />   <!-- 数据库连接可用性测试语句 -->  
+        <property name="testOnBorrow" value="true" />          <!-- 每次获取一个连接的时候，验证一下连接是否可用，语句在validationQuery里面 -->  
+        <property name="removeAbandoned" value="true" />       <!-- 自动处理连接未关闭的问题，Setting this to true can recover db connections from poorly written applications which fail to close a connection.  -->  
+        <property name="removeAbandonedTimeout" value="300" /> <!-- 连接使用后5分钟未关闭，则抛弃 -->  
+    </bean>
+    
+    
+<!-- <bean id="daoImp" class="org.ieem.dao.ContactDAOImpl"> -->
+<!--     <constructor-arg ref="dataSource" /> -->
+<!-- </bean> -->
+
+    <!-- ADD PERSISTENCE SUPPORT HERE (jpa, hibernate, etc) -->
+	<bean id="hibernate4AnnotatedSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="annotatedClasses">
+            <list>
+                <value>com.ru.entity.Person</value>
+                <value>com.ru.entity.User</value>
+                <value>com.ru.entity.Stock</value>
+                <value>com.ru.entity.Hstock</value>
+           
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>  
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="current_session_context_class">thread</prop>
+            </props>
+        </property>
+    </bean>
+     
+    <bean id="personDAO" class="com.ru.dao.PersonDAOImpl">
+        <property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+    </bean>
+    
+    <bean id="personService" class="com.ru.service.PersonServiceImpl">
+        <property name="personDAO" ref="personDAO"></property>
+    </bean>
+    
+    <bean id="userDAO" class="com.ru.dao.UserDAOImpl">
+        <property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+    </bean>
+    
+    <bean id="userService" class="com.ru.service.UserServiceImpl">
+        <property name="userDAO" ref="userDAO"></property>
+    </bean>
+    
+    <bean id="stockDAO" class="com.ru.dao.StockDAOImpl">
+        <property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+    </bean>
+    
+    <bean id="stockService" class="com.ru.service.StockServiceImpl">
+        <property name="stockDAO" ref="stockDAO"></property>
+    </bean> 
+    
+    <bean id="hstockDAO" class="com.ru.dao.HstockDAOImpl">
+        <property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+    </bean>
+    
+    <bean id="hstockService" class="com.ru.service.HstockServiceImpl">
+        <property name="hstockDAO" ref="hstockDAO"></property>
+    </bean> 
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+     
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+    </bean>
+    
+    <bean id="yahooService" class="com.ru.service.YahooServiceImpl">
+        <property name="stockDAO" ref="stockDAO"></property>
+    </bean> 
+
+</beans>
